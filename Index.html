@@ -1549,6 +1549,30 @@
     transition: background 0.15s;
   }
   .admin-modal-close:hover { background: rgba(255,255,255,0.15); }
+
+  /* BOTÃO SAIR (logout) */
+  .admin-modal-logout {
+    background: rgba(255,204,0,0.12);
+    border: 1px solid rgba(255,204,0,0.4);
+    color: var(--fab-yellow);
+    padding: 7px 14px;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.18s;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
+  .admin-modal-logout:hover {
+    background: var(--fab-yellow);
+    color: var(--fab-blue);
+    border-color: var(--fab-yellow);
+  }
   .admin-modal-body { padding: 20px 24px 24px; }
 
   /* TELA DE LOGIN */
@@ -4725,7 +4749,7 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
     adminAuth: 'sisi_admin_authed'  // marca sessão autenticada
   };
   // Senha de admin — recomendado trocar no HTML antes de subir ao GitHub
-  const ADMIN_PASSWORD = 'sisi2026';
+  const ADMIN_PASSWORD = 'Infa99Adelfi';
 
   // Estado interno
   let pendingPayload = null;
@@ -4899,11 +4923,17 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
     $('adminPanelView').classList.remove('open');
     $('adminLoginError').classList.remove('show');
     $('adminPasswordInput').value = '';
+    // Esconder botão Sair na tela de login
+    const logoutBtn = $('adminLogoutBtn');
+    if (logoutBtn) logoutBtn.style.display = 'none';
     setTimeout(() => $('adminPasswordInput').focus(), 50);
   }
   function showAdminPanel() {
     $('adminLoginView').style.display = 'none';
     $('adminPanelView').classList.add('open');
+    // Mostrar botão Sair quando autenticado
+    const logoutBtn = $('adminLogoutBtn');
+    if (logoutBtn) logoutBtn.style.display = 'inline-flex';
     // Popular configuração atual
     const cfg = getConfig();
     $('adminBinIdInput').value = cfg.binId;
@@ -4935,6 +4965,17 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
       $('adminPasswordInput').value = '';
       $('adminPasswordInput').focus();
     }
+  }
+
+  function doLogout() {
+    // Remove autenticação da sessão
+    sessionStorage.removeItem(STORAGE_KEYS.adminAuth);
+    adminLog('Logout realizado. Sessão administrativa encerrada.', 'info');
+    // Limpa qualquer prévia/editor aberto
+    hidePreview();
+    $('adminEditorSection').style.display = 'none';
+    // Fecha o modal completamente (volta a aparecer só botão Admin no rodapé)
+    closeAdminModal();
   }
 
   // ---- SALVAR CONFIGURAÇÃO ----
@@ -5491,6 +5532,10 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
       if (e.target.id === 'adminModalBackdrop') closeAdminModal();
     });
 
+    // Logout
+    const logoutBtn = $('adminLogoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
+
     // Login
     $('adminLoginBtn').addEventListener('click', tryLogin);
     $('adminPasswordInput').addEventListener('keydown', (e) => {
@@ -5567,7 +5612,17 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
         <div class="admin-modal-title" id="adminModalTitle">Área Administrativa</div>
         <div class="admin-modal-subtitle">Atualização de dados · Configuração JSONBin</div>
       </div>
-      <button class="admin-modal-close" id="adminModalCloseBtn" type="button" aria-label="Fechar">×</button>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button class="admin-modal-logout" id="adminLogoutBtn" type="button" aria-label="Sair" title="Sair da área administrativa" style="display:none;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px; vertical-align:-2px;">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Sair
+        </button>
+        <button class="admin-modal-close" id="adminModalCloseBtn" type="button" aria-label="Fechar">×</button>
+      </div>
     </div>
     <div class="admin-modal-body">
 
