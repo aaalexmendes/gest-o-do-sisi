@@ -1312,16 +1312,20 @@
     transition: width 0.6s ease;
     position: relative;
   }
+  .stacked-seg.s030 { background: var(--fab-blue-light); }
   .stacked-seg.s339 { background: var(--fab-blue); }
   .stacked-seg.s449 { background: var(--fab-yellow); }
   .stacked-meta {
     margin-top: 4px;
     display: flex;
     justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
     font-family: 'Roboto Mono', monospace;
     font-size: 10px;
     color: var(--gray-500);
   }
+  .stacked-meta .s030-val { color: var(--fab-blue-light); font-weight: 600; }
   .stacked-meta .s339-val { color: var(--fab-blue); font-weight: 600; }
   .stacked-meta .s449-val { color: var(--fab-yellow-dark); font-weight: 600; }
 
@@ -2872,6 +2876,7 @@
           <th class="num">Necessário</th>
           <th class="num">Aprovado</th>
           <th class="num">Descentralizado</th>
+          <th class="num">A Liberar 339030</th>
           <th class="num">A Liberar 339039</th>
           <th class="num">A Liberar 449052</th>
           <th class="num">Total a Liberar</th>
@@ -2886,6 +2891,7 @@
           <td class="num"><span class="cur">R$</span><span id="ft-nec">0</span></td>
           <td class="num"><span class="cur">R$</span><span id="ft-apr">0</span></td>
           <td class="num"><span class="cur">R$</span><span id="ft-rec">0</span></td>
+          <td class="num"><span class="cur">R$</span><span id="ft-030">0</span></td>
           <td class="num"><span class="cur">R$</span><span id="ft-339">0</span></td>
           <td class="num"><span class="cur">R$</span><span id="ft-449">0</span></td>
           <td class="num"><span class="cur">R$</span><span id="ft-disp">0</span></td>
@@ -2976,8 +2982,9 @@ const guarnicaoList = makeList('guarnicao');
 const omList = makeList('om');
 const nomenclaturaList = makeList('nomenclatura');
 // Naturezas de Despesa: lista fixa baseada nos códigos do plano de contas
-const naturezaList = ['339039', '449052'];
+const naturezaList = ['339030', '339039', '449052'];
 const naturezaLabels = {
+  '339030': '339030 — Material de Consumo',
   '339039': '339039 — Outros Serviços de Terceiros (PJ)',
   '449052': '449052 — Equipamentos e Material Permanente'
 };
@@ -3133,9 +3140,10 @@ function getFiltered() {
     if (state.om.size && !state.om.has(r.om)) return false;
     if (state.natureza.size) {
       // Mostra a OM se ela tem disponível em pelo menos uma das naturezas filtradas
+      const has030 = state.natureza.has('339030') && (r.disp_339030 || 0) > 0;
       const has339 = state.natureza.has('339039') && r.disp_339039 > 0;
       const has449 = state.natureza.has('449052') && r.disp_449052 > 0;
-      if (!has339 && !has449) return false;
+      if (!has030 && !has339 && !has449) return false;
     }
     return true;
   });
@@ -3929,25 +3937,27 @@ function renderTopOms(data) {
   }).join('');
 }
 
-// ============ STACKED 339 vs 449 ============
+// ============ STACKED 339/449 ============
 function renderStacked(data) {
   const byOds = {};
   data.forEach(r => {
-    if (!byOds[r.ods]) byOds[r.ods] = { ods: r.ods, s339: 0, s449: 0 };
+    if (!byOds[r.ods]) byOds[r.ods] = { ods: r.ods, s030: 0, s339: 0, s449: 0 };
+    byOds[r.ods].s030 += (r.disp_339030 || 0);
     byOds[r.ods].s339 += r.disp_339039;
     byOds[r.ods].s449 += r.disp_449052;
   });
-  const arr = Object.values(byOds).filter(x => x.s339 + x.s449 > 0)
-    .sort((a, b) => (b.s339 + b.s449) - (a.s339 + a.s449));
+  const arr = Object.values(byOds).filter(x => x.s030 + x.s339 + x.s449 > 0)
+    .sort((a, b) => (b.s030 + b.s339 + b.s449) - (a.s030 + a.s339 + a.s449));
   const wrap = document.getElementById('stackedList');
   if (!arr.length) {
     wrap.innerHTML = '<div class="empty-state"><div class="glyph">∅</div><p>Sem crédito disponível para os filtros aplicados</p></div>';
     return;
   }
-  const maxTotal = Math.max(...arr.map(x => x.s339 + x.s449));
+  const maxTotal = Math.max(...arr.map(x => x.s030 + x.s339 + x.s449));
   wrap.innerHTML = arr.map(n => {
-    const total = n.s339 + n.s449;
+    const total = n.s030 + n.s339 + n.s449;
     const totalPct = (total / maxTotal) * 100;
+    const w030 = total > 0 ? (n.s030 / total) * totalPct : 0;
     const w339 = total > 0 ? (n.s339 / total) * totalPct : 0;
     const w449 = total > 0 ? (n.s449 / total) * totalPct : 0;
     return `
@@ -3957,12 +3967,14 @@ function renderStacked(data) {
           <span class="total">R$ ${fmtBRL0(total)}</span>
         </div>
         <div class="stacked-bar">
+          <div class="stacked-seg s030" style="width:${w030}%"></div>
           <div class="stacked-seg s339" style="width:${w339}%"></div>
           <div class="stacked-seg s449" style="width:${w449}%"></div>
         </div>
         <div class="stacked-meta">
-          <span>339039 (Serviços) · <span class="s339-val">R$ ${fmtBRL0(n.s339)}</span></span>
-          <span><span class="s449-val">R$ ${fmtBRL0(n.s449)}</span> · 449052 (Equip.)</span>
+          <span>339030 · <span class="s030-val">R$ ${fmtBRL0(n.s030)}</span></span>
+          <span>339039 · <span class="s339-val">R$ ${fmtBRL0(n.s339)}</span></span>
+          <span><span class="s449-val">R$ ${fmtBRL0(n.s449)}</span> · 449052</span>
         </div>
       </div>
     `;
@@ -4194,7 +4206,7 @@ function renderTable(data) {
     return a.om.localeCompare(b.om);
   });
   if (!sorted.length) {
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-state"><div class="glyph">∅</div><p>Nenhum registro corresponde aos filtros aplicados.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-state"><div class="glyph">∅</div><p>Nenhum registro corresponde aos filtros aplicados.</p></div></td></tr>`;
   } else {
     tbody.innerHTML = sorted.map(r => {
       const num = (v) => `<td class="num ${v === 0 ? 'zero' : ''}"><span class="cur">R$</span>${fmtBRL0(v)}</td>`;
@@ -4207,6 +4219,7 @@ function renderTable(data) {
           ${num(r.necessario)}
           ${num(r.aprovado)}
           ${num(r.recebido)}
+          ${num(r.disp_339030 || 0)}
           ${num(r.disp_339039)}
           ${num(r.disp_449052)}
           ${num(r.disponivel)}
@@ -4216,10 +4229,11 @@ function renderTable(data) {
     }).join('');
   }
   // Footer totals
-  const sum = (k) => sorted.reduce((s, r) => s + r[k], 0);
+  const sum = (k) => sorted.reduce((s, r) => s + (r[k] || 0), 0);
   document.getElementById('ft-nec').textContent = fmtBRL0(sum('necessario'));
   document.getElementById('ft-apr').textContent = fmtBRL0(sum('aprovado'));
   document.getElementById('ft-rec').textContent = fmtBRL0(sum('recebido'));
+  document.getElementById('ft-030').textContent = fmtBRL0(sum('disp_339030'));
   document.getElementById('ft-339').textContent = fmtBRL0(sum('disp_339039'));
   document.getElementById('ft-449').textContent = fmtBRL0(sum('disp_449052'));
   document.getElementById('ft-disp').textContent = fmtBRL0(sum('disponivel'));
@@ -4587,6 +4601,7 @@ function exportToCSV() {
     'Necessário (R$)',
     'Aprovado (R$)',
     'Descentralizado (R$)',
+    'A Liberar 339030 (R$)',
     'A Liberar 339039 (R$)',
     'A Liberar 449052 (R$)',
     'Total a Liberar (R$)',
@@ -4618,6 +4633,7 @@ function exportToCSV() {
       numBR(r.necessario),
       numBR(r.aprovado),
       numBR(r.recebido),
+      numBR(r.disp_339030 || 0),
       numBR(r.disp_339039),
       numBR(r.disp_449052),
       numBR(r.disponivel),
@@ -4627,12 +4643,13 @@ function exportToCSV() {
   });
 
   // Linha de totais
-  const sum = (k) => sorted.reduce((s, r) => s + r[k], 0);
+  const sum = (k) => sorted.reduce((s, r) => s + (r[k] || 0), 0);
   lines.push([
     '', '', '', '', 'TOTAL GERAL FILTRADO',
     numBR(sum('necessario')),
     numBR(sum('aprovado')),
     numBR(sum('recebido')),
+    numBR(sum('disp_339030')),
     numBR(sum('disp_339039')),
     numBR(sum('disp_449052')),
     numBR(sum('disponivel')),
@@ -4751,6 +4768,11 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
   // Senha de admin — recomendado trocar no HTML antes de subir ao GitHub
   const ADMIN_PASSWORD = 'Infa99Adelfi';
 
+  // Bin ID padrão (embutido no HTML) — usado por todos os usuários para LER dados da JSONBin.
+  // Pode ser sobrescrito pelo localStorage se o admin configurar outro bin.
+  // É seguro deixar visível: o Bin ID só permite leitura. Para gravar, precisa da Master Key (privada).
+  const BUILTIN_BIN_ID = '6a025e88c0954111d80c7018';
+
   // Estado interno
   let pendingPayload = null;
   let pendingOrigin = '';
@@ -4790,7 +4812,9 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
   // ---- JSONBin: CARREGAMENTO ----
   function getConfig() {
     return {
-      binId: localStorage.getItem(STORAGE_KEYS.binId) || '',
+      // Bin ID: usa o do localStorage se admin sobrescreveu, senão usa o embutido no HTML
+      binId: localStorage.getItem(STORAGE_KEYS.binId) || BUILTIN_BIN_ID || '',
+      // Master Key: só fica no localStorage (privada, nunca embutida)
       masterKey: localStorage.getItem(STORAGE_KEYS.masterKey) || ''
     };
   }
@@ -5090,6 +5114,7 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
       necessario: toNum(findCol(raw, ['valor_necessario', 'total_necessario', 'necessario'])),
       aprovado: toNum(findCol(raw, ['valor_aprovado', 'total_aprovado', 'aprovado'])),
       recebido: toNum(findCol(raw, ['valor_recebido', 'total_recebido', 'recebido', 'descentralizado'])),
+      disp_339030: toNum(findCol(raw, ['credito_disponivel_339030', 'disp_339030', '339030'])),
       disp_339039: toNum(findCol(raw, ['credito_disponivel_339039', 'disp_339039', '339039'])),
       disp_449052: toNum(findCol(raw, ['credito_disponivel_449052', 'disp_449052', '449052'])),
       disponivel: 0,
@@ -5099,7 +5124,7 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
       liquidado: toNum(findCol(raw, ['valor_liquidado', 'total_liquidado', 'liquidado'])),
     };
     r.disponivel = toNum(findCol(raw, ['credito_disponivel', 'total_disponivel', 'a_liberar', 'disponivel']))
-      || (r.disp_339039 + r.disp_449052);
+      || (r.disp_339030 + r.disp_339039 + r.disp_449052);
     return r;
   }
 
@@ -5364,6 +5389,7 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
       { key: 'necessario', label: 'Necessário', num: true },
       { key: 'aprovado', label: 'Aprovado', num: true },
       { key: 'recebido', label: 'Descentr.', num: true },
+      { key: 'disp_339030', label: '339030', num: true },
       { key: 'disp_339039', label: '339039', num: true },
       { key: 'disp_449052', label: '449052', num: true },
       { key: 'empenhado', label: 'Empenhado', num: true },
