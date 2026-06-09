@@ -1283,7 +1283,7 @@
     margin-top: 1px;
   }
 
-  /* STACKED BAR (339039 vs 449052) */
+  /* STACKED BAR (naturezas de despesa) */
   .stacked-list { display: flex; flex-direction: column; gap: 14px; }
   .stacked-row { font-size: 11.5px; }
   .stacked-head {
@@ -1315,6 +1315,7 @@
   .stacked-seg.s030 { background: var(--fab-blue-light); }
   .stacked-seg.s339 { background: var(--fab-blue); }
   .stacked-seg.s449 { background: var(--fab-yellow); }
+  .stacked-seg.s051 { background: var(--orange); }
   .stacked-meta {
     margin-top: 4px;
     display: flex;
@@ -1328,6 +1329,7 @@
   .stacked-meta .s030-val { color: var(--fab-blue-light); font-weight: 600; }
   .stacked-meta .s339-val { color: var(--fab-blue); font-weight: 600; }
   .stacked-meta .s449-val { color: var(--fab-yellow-dark); font-weight: 600; }
+  .stacked-meta .s051-val { color: var(--orange); font-weight: 600; }
 
   /* TABLE */
   .table-wrap {
@@ -2159,6 +2161,71 @@
     margin-right: 3px;
   }
 
+  /* Modal: empenho por natureza de despesa */
+  .modal-emp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .modal-emp-head h3 {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--fab-blue);
+    margin: 0;
+  }
+  .modal-emp-head .count {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: var(--gray-500);
+  }
+  .modal-emp-bar {
+    height: 20px;
+    display: flex;
+    background: var(--gray-100);
+    overflow: hidden;
+    border-radius: 1px;
+    margin-bottom: 12px;
+  }
+  .modal-emp-legend {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 18px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .emp-nd-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+  }
+  .emp-nd-dot {
+    width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
+  }
+  .emp-nd-dot.s030 { background: var(--fab-blue-light); }
+  .emp-nd-dot.s339 { background: var(--fab-blue); }
+  .emp-nd-dot.s449 { background: var(--fab-yellow); }
+  .emp-nd-dot.s051 { background: var(--orange); }
+  .emp-nd-cod { color: var(--gray-700); font-weight: 600; }
+  .emp-nd-val { color: var(--fab-blue); margin-left: auto; }
+  .emp-nd-pct { color: var(--gray-500); min-width: 42px; text-align: right; }
+  .modal-emp-note {
+    background: var(--gray-50);
+    border-left: 3px solid var(--gray-400, #9AA0A6);
+    border-radius: 2px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: var(--gray-700);
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+
   /* Modal: lista de solicitações */
   .modal-solicitacoes-head {
     display: flex;
@@ -2664,14 +2731,14 @@
       <div class="kpi-sub" id="kpi-aprovado-sub">cobertura: <strong>0%</strong></div>
     </div>
     <div class="kpi kpi-rec">
-      <div class="kpi-lbl">Descentralizado OM em <span class="kpi-ano"></span></div>
+      <div class="kpi-lbl">Já na OM <span class="kpi-ano"></span></div>
       <div class="kpi-val"><span class="cur">R$</span><span id="kpi-recebido">0</span></div>
       <div class="kpi-sub" id="kpi-recebido-sub">do aprovado: <strong>0%</strong></div>
     </div>
     <div class="kpi kpi-disp">
       <div class="kpi-lbl">Crédito a Liberar em <span class="kpi-ano"></span></div>
       <div class="kpi-val"><span class="cur">R$</span><span id="kpi-disponivel">0</span></div>
-      <div class="kpi-sub" id="kpi-disponivel-sub">339039 + 449052</div>
+      <div class="kpi-sub" id="kpi-disponivel-sub">339030 + 339039 + 449052 + 449051</div>
     </div>
   </div>
 
@@ -2815,8 +2882,8 @@
       <div class="bar-chart" id="topomChart"></div>
     </div>
     <div class="chart-card" data-pdf-name="Credito_339039_vs_449052">
-      <h3>Crédito 339039 vs 449052</h3>
-      <div class="chart-sub">Distribuição por ODS · Serviços vs Equipamentos</div>
+      <h3>Crédito a Liberar por Natureza de Despesa</h3>
+      <div class="chart-sub">Distribuição por ODS · 339030 · 339039 · 449052 · 449051</div>
       <div class="stacked-list" id="stackedList"></div>
     </div>
   </section>
@@ -2879,6 +2946,7 @@
           <th class="num">A Liberar 339030</th>
           <th class="num">A Liberar 339039</th>
           <th class="num">A Liberar 449052</th>
+          <th class="num">A Liberar 449051</th>
           <th class="num">Total a Liberar</th>
           <th class="num">Empenhado</th>
           <th class="num">Liquidado</th>
@@ -2894,6 +2962,7 @@
           <td class="num"><span class="cur">R$</span><span id="ft-030">0</span></td>
           <td class="num"><span class="cur">R$</span><span id="ft-339">0</span></td>
           <td class="num"><span class="cur">R$</span><span id="ft-449">0</span></td>
+          <td class="num"><span class="cur">R$</span><span id="ft-051">0</span></td>
           <td class="num"><span class="cur">R$</span><span id="ft-disp">0</span></td>
           <td class="num"><span class="cur">R$</span><span id="ft-emp">0</span></td>
           <td class="num"><span class="cur">R$</span><span id="ft-liq">0</span></td>
@@ -2982,11 +3051,12 @@ const guarnicaoList = makeList('guarnicao');
 const omList = makeList('om');
 const nomenclaturaList = makeList('nomenclatura');
 // Naturezas de Despesa: lista fixa baseada nos códigos do plano de contas
-const naturezaList = ['339030', '339039', '449052'];
+const naturezaList = ['339030', '339039', '449052', '449051'];
 const naturezaLabels = {
   '339030': '339030 — Material de Consumo',
   '339039': '339039 — Outros Serviços de Terceiros (PJ)',
-  '449052': '449052 — Equipamentos e Material Permanente'
+  '449052': '449052 — Equipamentos e Material Permanente',
+  '449051': '449051 — Obras e Instalações'
 };
 
 // Cores fixas para ODS
@@ -3143,7 +3213,8 @@ function getFiltered() {
       const has030 = state.natureza.has('339030') && (r.disp_339030 || 0) > 0;
       const has339 = state.natureza.has('339039') && r.disp_339039 > 0;
       const has449 = state.natureza.has('449052') && r.disp_449052 > 0;
-      if (!has030 && !has339 && !has449) return false;
+      const has051 = state.natureza.has('449051') && (r.disp_449051 || 0) > 0;
+      if (!has030 && !has339 && !has449 && !has051) return false;
     }
     return true;
   });
@@ -3207,7 +3278,7 @@ function renderKPIs(data) {
   document.getElementById('kpi-necessario-sub').innerHTML = `<strong>${data.length}</strong> OM(s) selecionada(s)`;
   document.getElementById('kpi-aprovado-sub').innerHTML = `cobertura: <strong>${nec > 0 ? fmtPct(apr/nec*100) : '—'}</strong>`;
   document.getElementById('kpi-recebido-sub').innerHTML = `do aprovado: <strong>${apr > 0 ? fmtPct(rec/apr*100) : '—'}</strong>`;
-  document.getElementById('kpi-disponivel-sub').textContent = '339039 + 449052';
+  document.getElementById('kpi-disponivel-sub').textContent = '339030 + 339039 + 449052 + 449051';
 }
 
 // ============ CASCATA FINANCEIRA ============
@@ -3941,25 +4012,27 @@ function renderTopOms(data) {
 function renderStacked(data) {
   const byOds = {};
   data.forEach(r => {
-    if (!byOds[r.ods]) byOds[r.ods] = { ods: r.ods, s030: 0, s339: 0, s449: 0 };
+    if (!byOds[r.ods]) byOds[r.ods] = { ods: r.ods, s030: 0, s339: 0, s449: 0, s051: 0 };
     byOds[r.ods].s030 += (r.disp_339030 || 0);
     byOds[r.ods].s339 += r.disp_339039;
     byOds[r.ods].s449 += r.disp_449052;
+    byOds[r.ods].s051 += (r.disp_449051 || 0);
   });
-  const arr = Object.values(byOds).filter(x => x.s030 + x.s339 + x.s449 > 0)
-    .sort((a, b) => (b.s030 + b.s339 + b.s449) - (a.s030 + a.s339 + a.s449));
+  const arr = Object.values(byOds).filter(x => x.s030 + x.s339 + x.s449 + x.s051 > 0)
+    .sort((a, b) => (b.s030 + b.s339 + b.s449 + b.s051) - (a.s030 + a.s339 + a.s449 + a.s051));
   const wrap = document.getElementById('stackedList');
   if (!arr.length) {
     wrap.innerHTML = '<div class="empty-state"><div class="glyph">∅</div><p>Sem crédito disponível para os filtros aplicados</p></div>';
     return;
   }
-  const maxTotal = Math.max(...arr.map(x => x.s030 + x.s339 + x.s449));
+  const maxTotal = Math.max(...arr.map(x => x.s030 + x.s339 + x.s449 + x.s051));
   wrap.innerHTML = arr.map(n => {
-    const total = n.s030 + n.s339 + n.s449;
+    const total = n.s030 + n.s339 + n.s449 + n.s051;
     const totalPct = (total / maxTotal) * 100;
     const w030 = total > 0 ? (n.s030 / total) * totalPct : 0;
     const w339 = total > 0 ? (n.s339 / total) * totalPct : 0;
     const w449 = total > 0 ? (n.s449 / total) * totalPct : 0;
+    const w051 = total > 0 ? (n.s051 / total) * totalPct : 0;
     return `
       <div class="stacked-row">
         <div class="stacked-head">
@@ -3970,11 +4043,13 @@ function renderStacked(data) {
           <div class="stacked-seg s030" style="width:${w030}%"></div>
           <div class="stacked-seg s339" style="width:${w339}%"></div>
           <div class="stacked-seg s449" style="width:${w449}%"></div>
+          <div class="stacked-seg s051" style="width:${w051}%"></div>
         </div>
         <div class="stacked-meta">
           <span>339030 · <span class="s030-val">R$ ${fmtBRL0(n.s030)}</span></span>
           <span>339039 · <span class="s339-val">R$ ${fmtBRL0(n.s339)}</span></span>
-          <span><span class="s449-val">R$ ${fmtBRL0(n.s449)}</span> · 449052</span>
+          <span>449052 · <span class="s449-val">R$ ${fmtBRL0(n.s449)}</span></span>
+          <span>449051 · <span class="s051-val">R$ ${fmtBRL0(n.s051)}</span></span>
         </div>
       </div>
     `;
@@ -4155,6 +4230,44 @@ function showOmDetail(om) {
   `;
 
   let body = fin;
+
+  // ---- Empenho por Natureza de Despesa (apenas OMs que já empenharam) ----
+  const empNd = [
+    { cod: '339030', val: verbaRow.emp_339030 || 0, cls: 's030' },
+    { cod: '339039', val: verbaRow.emp_339039 || 0, cls: 's339' },
+    { cod: '449052', val: verbaRow.emp_449052 || 0, cls: 's449' },
+    { cod: '449051', val: verbaRow.emp_449051 || 0, cls: 's051' },
+  ];
+  const empTotalNd = empNd.reduce((s, e) => s + e.val, 0);
+  const empTotal = verbaRow.empenhado || 0;
+  if (empTotal > 0) {
+    let empBlock = `
+      <div class="modal-emp-head">
+        <h3>Empenho por Natureza de Despesa</h3>
+        <span class="count">Total empenhado: R$ ${fmtBRL0(empTotal)}</span>
+      </div>`;
+    if (empTotalNd > 0) {
+      const maxRef = empTotalNd;
+      empBlock += `<div class="modal-emp-bar">` +
+        empNd.map(e => `<div class="stacked-seg ${e.cls}" style="width:${(e.val / maxRef) * 100}%"></div>`).join('') +
+        `</div>
+        <div class="modal-emp-legend">` +
+        empNd.map(e => `
+          <div class="emp-nd-item">
+            <span class="emp-nd-dot ${e.cls}"></span>
+            <span class="emp-nd-cod">${e.cod}</span>
+            <span class="emp-nd-val">R$ ${fmtBRL0(e.val)}</span>
+            <span class="emp-nd-pct">${empTotalNd > 0 ? fmtPct(e.val / empTotalNd * 100, 1) : '—'}</span>
+          </div>`).join('') +
+        `</div>`;
+    } else {
+      empBlock += `<div class="modal-emp-note">Esta OM possui R$ ${fmtBRL0(empTotal)} empenhado, mas a base atual não traz o detalhamento por natureza de despesa. Inclua as colunas <strong>empenhado_339030 / _339039 / _449052 / _449051</strong> na importação para exibir a distribuição.</div>`;
+    }
+    body += empBlock;
+  } else {
+    body += `<div class="modal-emp-note">Sem empenho registrado para esta OM no exercício.</div>`;
+  }
+
   body += `
     <div class="modal-solicitacoes-head">
       <h3>Serviços e Materiais Solicitados</h3>
@@ -4206,7 +4319,7 @@ function renderTable(data) {
     return a.om.localeCompare(b.om);
   });
   if (!sorted.length) {
-    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-state"><div class="glyph">∅</div><p>Nenhum registro corresponde aos filtros aplicados.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state"><div class="glyph">∅</div><p>Nenhum registro corresponde aos filtros aplicados.</p></div></td></tr>`;
   } else {
     tbody.innerHTML = sorted.map(r => {
       const num = (v) => `<td class="num ${v === 0 ? 'zero' : ''}"><span class="cur">R$</span>${fmtBRL0(v)}</td>`;
@@ -4222,6 +4335,7 @@ function renderTable(data) {
           ${num(r.disp_339030 || 0)}
           ${num(r.disp_339039)}
           ${num(r.disp_449052)}
+          ${num(r.disp_449051 || 0)}
           ${num(r.disponivel)}
           ${num(r.empenhado)}
           ${num(r.liquidado)}
@@ -4236,6 +4350,7 @@ function renderTable(data) {
   document.getElementById('ft-030').textContent = fmtBRL0(sum('disp_339030'));
   document.getElementById('ft-339').textContent = fmtBRL0(sum('disp_339039'));
   document.getElementById('ft-449').textContent = fmtBRL0(sum('disp_449052'));
+  document.getElementById('ft-051').textContent = fmtBRL0(sum('disp_449051'));
   document.getElementById('ft-disp').textContent = fmtBRL0(sum('disponivel'));
   document.getElementById('ft-emp').textContent = fmtBRL0(sum('empenhado'));
   document.getElementById('ft-liq').textContent = fmtBRL0(sum('liquidado'));
@@ -4604,6 +4719,7 @@ function exportToCSV() {
     'A Liberar 339030 (R$)',
     'A Liberar 339039 (R$)',
     'A Liberar 449052 (R$)',
+    'A Liberar 449051 (R$)',
     'Total a Liberar (R$)',
     'Empenhado (R$)',
     'Liquidado (R$)',
@@ -4636,6 +4752,7 @@ function exportToCSV() {
       numBR(r.disp_339030 || 0),
       numBR(r.disp_339039),
       numBR(r.disp_449052),
+      numBR(r.disp_449051 || 0),
       numBR(r.disponivel),
       numBR(r.empenhado),
       numBR(r.liquidado),
@@ -4652,6 +4769,7 @@ function exportToCSV() {
     numBR(sum('disp_339030')),
     numBR(sum('disp_339039')),
     numBR(sum('disp_449052')),
+    numBR(sum('disp_449051')),
     numBR(sum('disponivel')),
     numBR(sum('empenhado')),
     numBR(sum('liquidado')),
@@ -5117,14 +5235,19 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
       disp_339030: toNum(findCol(raw, ['credito_disponivel_339030', 'disp_339030', '339030'])),
       disp_339039: toNum(findCol(raw, ['credito_disponivel_339039', 'disp_339039', '339039'])),
       disp_449052: toNum(findCol(raw, ['credito_disponivel_449052', 'disp_449052', '449052'])),
+      disp_449051: toNum(findCol(raw, ['credito_disponivel_449051', 'disp_449051', '449051'])),
       disponivel: 0,
       pct_total: toNum(findCol(raw, ['porcentagem_do_total', 'pct_total', 'pct'])),
       nao_empenhado: toNum(findCol(raw, ['valor_nao_empenhado', 'nao_empenhado', 'a_empenhar'])),
       empenhado: toNum(findCol(raw, ['valor_total_empenhado', 'total_empenhado', 'empenhado'])),
+      emp_339030: toNum(findCol(raw, ['empenhado_339030', 'emp_339030'])),
+      emp_339039: toNum(findCol(raw, ['empenhado_339039', 'emp_339039'])),
+      emp_449052: toNum(findCol(raw, ['empenhado_449052', 'emp_449052'])),
+      emp_449051: toNum(findCol(raw, ['empenhado_449051', 'emp_449051'])),
       liquidado: toNum(findCol(raw, ['valor_liquidado', 'total_liquidado', 'liquidado'])),
     };
     r.disponivel = toNum(findCol(raw, ['credito_disponivel', 'total_disponivel', 'a_liberar', 'disponivel']))
-      || (r.disp_339030 + r.disp_339039 + r.disp_449052);
+      || (r.disp_339030 + r.disp_339039 + r.disp_449052 + r.disp_449051);
     return r;
   }
 
@@ -5392,6 +5515,7 @@ document.getElementById('lastUpdate').textContent = `Atualizado ${new Date().toL
       { key: 'disp_339030', label: '339030', num: true },
       { key: 'disp_339039', label: '339039', num: true },
       { key: 'disp_449052', label: '449052', num: true },
+      { key: 'disp_449051', label: '449051', num: true },
       { key: 'empenhado', label: 'Empenhado', num: true },
       { key: 'liquidado', label: 'Liquidado', num: true },
     ];
